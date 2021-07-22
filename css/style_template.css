@@ -1,0 +1,38 @@
+html {
+    height:{{html_height}};
+    width:{{html_width}};
+    margin:0;
+    padding:0;
+}
+
+body {
+  margin:0;
+  padding:0;
+  /* background-color: red; */
+  /* background-image: url("/Users/meudon/development/sber/table_generation/css/5a68f4a6d2bdc16129fbabcf.jpeg") */
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: {{table_width}};
+  height: {{table_height}};
+}
+    
+td {
+  /* border: {{td_border_px}} solid {{td_border_color}}; */
+  text-align: {{td_text_align}};
+  border-left: solid {{td_border_color}} {{td_border_vertical_px}};
+  border-right: solid {{td_border_color}} {{td_border_vertical_px}};
+  border-top: solid {{td_border_color}} {{td_border_horizontal_px}};
+  border-bottom: solid {{td_border_color}} {{td_border_horizontal_px}};
+}
+    
+tr:nth-child({{tr_n_child}}) {
+  background-color: {{tr_back_color}};
+}
+
+th {
+  background-color: {{th_back_color}};
+  border: {{th_border_px}} solid {{th_border_color}};
+}

@@ -1,0 +1,20 @@
+{
+    "html_height": ["100%"],
+    "html_width": ["100%"],
+
+    "table_width": ["100%", "75%"],
+    "table_height": ["100%", "75%"],
+
+    "td_border_vertical_px": ["1px", "0px", "0px"],
+    "td_border_horizontal_px": ["1px", "0px", "0px"],
+
+    "td_border_color": ["black"],
+    "td_text_align": ["left", "center", "right"],
+
+    "tr_n_child": ["odd", "even", "none"],
+    "tr_back_color": ["gray", "none"],
+
+    "th_back_color": ["gray", "none"],
+    "th_border_px": ["1px"],
+    "th_border_color": ["black", "none"]
+}
