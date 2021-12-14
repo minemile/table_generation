@@ -8,7 +8,7 @@ import random
 from bs4 import BeautifulSoup
 
 
-class WordGenerator():
+class WordGenerator:
     def __init__(self, words, gen_numbers=True, n_max=5, p=0.5):
         self.words = words
         self.n_max = n_max
