@@ -2,7 +2,8 @@ import os
 import json
 from urllib import parse
 
-import cv2
+import numpy as np
+from cv2 import cv2
 from utils import parse_location, parse_locations, bbox_to_4_coords
 
 from selenium import webdriver
@@ -15,7 +16,9 @@ class Word:
         self.bbox = parse_location(word_tag.rect)
         self.text = word_tag.text
 
-    def to_annotations(self):
+    def to_annotations(self, flat=False):
+        if flat:
+            return self.text, self.bbox
         return {"text": self.text, "bbox": self.bbox}
 
 
@@ -33,10 +36,16 @@ class Cell:
             words_locations.append(Word(word))
         return words_locations
 
-    def to_annotations(self):
+    def to_annotations(self, flat=False):
         words = []
-        for word in self.words:
-            words.append(word.to_annotations())
+        if flat:
+            boxes = []
+            for word in self.words:
+                word, box = word.to_annotations(flat)
+                words.append(word)
+                boxes.append(box)
+            return words, boxes
+        words = [word.to_annotations(flat) for word in self.words]
         return {"bbox": self.bbox, "class": self.cell_type, "words": words}
 
 
@@ -52,27 +61,31 @@ class ParsedTable:
         im = self.image.copy()
         for cell in self.cells:
             x_min, y_min, x_max, y_max = cell.bbox
-            cv2.rectangle(im, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
+            cv2.rectangle(im, (x_min, y_min), (x_max, y_max), (0, 255, 0), 1)
             for word in cell.words:
                 x_min, y_min, x_max, y_max = word.bbox
-                cv2.rectangle(im, (x_min, y_min), (x_max, y_max), (0, 0, 255), 3)
+                cv2.rectangle(im, (x_min, y_min), (x_max, y_max), (0, 0, 255), 1)
 
         for header_cells in self.headers:
             x_min, y_min, x_max, y_max = header_cells.bbox
-            cv2.rectangle(im, (x_min, y_min), (x_max, y_max), (255, 0, 0), 3)
+            cv2.rectangle(im, (x_min, y_min), (x_max, y_max), (255, 0, 0), 1)
             for word in header_cells.words:
                 x_min, y_min, x_max, y_max = word.bbox
-                cv2.rectangle(im, (x_min, y_min), (x_max, y_max), (0, 0, 255), 3)
+                cv2.rectangle(im, (x_min, y_min), (x_max, y_max), (0, 0, 255), 1)
         return im
 
-    def to_annotations(self):
-        cells = []
-        for cell in self.cells + self.headers:
-            cells.append(cell.to_annotations())
+    def to_annotations(self, flat=False):
+        if flat:
+            output = {'labels': [], 'boxes': []}
+            for cell in self.cells + self.headers:
+                cell_words, cell_boxes = cell.to_annotations(flat)
+                output['labels'].extend(cell_words)
+                output['boxes'].extend(cell_boxes)
+        else:
+            output = {'cells': [cell.to_annotations(flat) for cell in self.cells + self.headers]}
 
-        output = {"cells": cells}
         with open(os.path.join(self.file_root, "annotation.json"), "w") as f:
-            json.dump(output, f, indent=4)
+            json.dump(output, f, indent=None if flat else 4)
 
 
 class TableParser:
@@ -91,6 +104,9 @@ class TableParser:
         table.screenshot(table_screenshot_path)
 
         table_image = cv2.imread(table_screenshot_path)
+        im = cv2.cvtColor(table_image, cv2.COLOR_BGR2GRAY)
+        cv2.imwrite(table_screenshot_path, cv2.bitwise_not(im))
+
         im = cv2.cvtColor(table_image, cv2.COLOR_BGR2RGB)
 
         cells_raw = self.driver.find_elements_by_tag_name("td")
