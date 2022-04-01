@@ -16,6 +16,7 @@ body {
 table {
   font-family: pickedfont;
   border-collapse: collapse;
+  font-size: 16,
   width: {{table_width}};
   height: {{table_height}};
 }

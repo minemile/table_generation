@@ -1,13 +1,10 @@
-import os
 import json
-from urllib import parse
+import os
 
-import numpy as np
 from cv2 import cv2
-from utils import parse_location, parse_locations, bbox_to_4_coords
-
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+
+from utils import parse_location
 
 
 class Word:
@@ -88,10 +85,23 @@ class ParsedTable:
             json.dump(output, f, indent=None if flat else 4)
 
 
+
+
+
 class TableParser:
     def __init__(self, options):
         self.chrome_options = options
         self.driver = webdriver.Chrome("./chromedriver", options=self.chrome_options)
+
+    def send(self, cmd, params=None):
+        if params is None:
+            params = {}
+        resource = "/session/%s/chromium/send_command_and_get_result" % self.driver.session_id
+        url = self.driver.command_executor._url + resource
+        body = json.dumps({'cmd': cmd, 'params': params})
+        response = self.driver.command_executor._request('POST', url, body)
+        # if response['status']: raise Exception(response.get('value'))
+        return response.get('value')
 
     def parse_table(self, file_path):
         root = os.path.join(os.getcwd(), file_path)
@@ -102,7 +112,10 @@ class TableParser:
         table = self.driver.find_element_by_tag_name("table")
         table_screenshot_path = os.path.join(root, "table.png")
         table.screenshot(table_screenshot_path)
-
+        self.send("Emulation.setDefaultBackgroundColorOverride",
+             {'color': {'r': 0, 'g': 0, 'b': 0, 'a': 0}})
+        table.screenshot(os.path.join(root, "table_transparent.png"))
+        self.send("Emulation.setDefaultBackgroundColorOverride")
         table_image = cv2.imread(table_screenshot_path)
         im = cv2.cvtColor(table_image, cv2.COLOR_BGR2GRAY)
         cv2.imwrite(table_screenshot_path, cv2.bitwise_not(im))

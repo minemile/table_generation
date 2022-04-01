@@ -1,13 +1,9 @@
-from typing import Collection
+import random
 
 import numpy as np
 from bs4 import BeautifulSoup
-from bs4.builder import HTML
-
 from yattag import Doc
 from yattag import indent
-import random
-from bs4 import BeautifulSoup
 
 WRAP = '<html><head><link rel="stylesheet" href="style.css" /></head>' \
        '<body><table class="iksweb"><tbody>\n{table_body}</tbody></table></body></html>'
@@ -47,7 +43,7 @@ class TemplateGenerator:
                     colspan = random.randint(1, max_colspan)
                     if colspan > 1:
                         grid[row, col:col + colspan] = 1
-                        print(row, col, rowspan, colspan, '\n', grid)
+                        # print(row, col, rowspan, colspan, '\n', grid)
                 if row + 1 < rows and random.random() < self.rowspan:
                     i = 1
                     while row + i < rows and not grid[row:row + i + 1, col:col + colspan].any():
@@ -56,7 +52,7 @@ class TemplateGenerator:
                     rowspan = random.randint(1, max_rowspan)
                     if rowspan > 1:
                         grid[row:row + rowspan, col:col + colspan] = 1
-                        print(row, col, rowspan, colspan, '\n', grid)
+                        # print(row, col, rowspan, colspan, '\n', grid)
                 rowspan = f' rowspan="{rowspan}"' if rowspan > 1 else ''
                 colspan = f' colspan="{colspan}"' if colspan > 1 else ''
                 cells += TD.format(rowspan=rowspan, colspan=colspan)
@@ -83,7 +79,10 @@ class WordGenerator:
         return string
 
     def generate_number(self):
-        return f"{random.uniform(-100000, 100000):.{random.randint(0, 8)}f}"
+        if random.random()<0.7:
+            return f"{random.uniform(-100000, 100000):.{random.randint(0, 8)}f}"
+        return str(random.randint(-10,10)
+
 
     def generate_word(self):
         return random.choice(self.words)
@@ -109,8 +108,8 @@ class HTMLTableGeneratorByTemplate:
             words = self.word_generator.get_string()
             for word in words:
                 new_tag = html.new_tag("word")
-                new_tag.string = word + "\n"
-                td.append(new_tag)
+                new_tag.string = word
+                td.extend([new_tag, ' '])
         return HTMLTable(html)
 
 
